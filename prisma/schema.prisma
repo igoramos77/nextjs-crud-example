@@ -1,0 +1,43 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Task {
+  id String @id @default(uuid())
+  title String
+  isDone Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AtividadeComplementar {
+  id String @id @default(uuid())
+  descricao String 
+  empresa String
+  cnpj String
+  carga_horaria_informada Int
+  carga_horaria_integralizada Int
+  justificativa String
+  certificado String
+  is_active Boolean @default(true)
+  status EStatus @default(in_validation)
+  //categoria_id @relation(fields: [])
+  //curso_id
+  //usuario_id
+  //createdAt DateTime @default(now())
+  //updatedAt DateTime @updatedAt
+}
+
+enum EStatus {
+  approved
+  in_validation
+  recused
+}
