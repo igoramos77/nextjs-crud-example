@@ -4,14 +4,11 @@ import { prisma } from '../../../lib/prisma';
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default async function (req: NextApiRequest, res: NextApiResponse) {
-    const { id, title, isDone, createdAt, updatedAt } = req.body; 
+  const response = await prisma.complementaryActivity.findMany({
+    orderBy: {
+      createdAt: 'desc'
+    }
+  });
 
-    await prisma.task.create({
-      data: {
-        title,
-        isDone: false,
-      } 
-    });
-
-    return res.status(201).json({});
+    return res.status(201).json(response);
 }
