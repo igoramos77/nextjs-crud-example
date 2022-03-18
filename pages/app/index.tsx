@@ -1,6 +1,8 @@
 import { GetServerSideProps } from 'next';
 import { signOut, useSession } from 'next-auth/react';
 
+import { useForm } from 'react-hook-form';
+
 import api from '../../src/services/api';
 
 import Image from 'next/image';
@@ -10,40 +12,35 @@ import { FormEvent, useCallback, useState } from 'react';
 import { prisma } from '../../lib/prisma';
 
 export default function App({ atividadesComplementares }) {
+  const { register, handleSubmit } = useForm();
   const { data, status } = useSession();
-  
-  const [description, setDescription] = useState('');
-  const [companyName, setCompanyName] = useState('');
-  const [cnpj, setCnpj] = useState('');
-  const [certificateUrl, setCertificateUrl] = useState('');
-  const [informedTime, setInformedTime] = useState(0);
   
   const [allAtividadesComplementares, setAllAtividadesComplementares] = useState<ComplementaryActivity[]>(atividadesComplementares);
 
-  const handleCreateTask = useCallback(async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmitForm = useCallback(async (data) => {
+    console.log(data);
 
     try {
       const response = await api.post<ComplementaryActivity>(`/api/activities/create`, {
-        description: description, 
-        companyName: companyName,
-        cnpj: cnpj,
-        informedTime: informedTime,
-        certificateUrl: certificateUrl,
+        description: data.description, 
+        companyName: data.companyName,
+        cnpj: data.cnpj,
+        informedTime: Number(data.informedTime),
+        certificateUrl: data.certificateUrl,
       });
   
       console.log(response.data);
 
       setAllAtividadesComplementares([
         ...allAtividadesComplementares,
-        response.data
+        response.data,
       ]);
 
     } catch (error) {
-      console.log(error)      
+      console.log(error);    
     }
     
-  }, [description, companyName, cnpj, informedTime, certificateUrl, allAtividadesComplementares]);
+  }, [allAtividadesComplementares]);
 
   return (
     <>
@@ -57,29 +54,27 @@ export default function App({ atividadesComplementares }) {
       <h2>Olá, {data?.user?.name}!</h2><br />
 
       <h2>Create a new actives</h2>
-      <form onSubmit={handleCreateTask}>
+      <form onSubmit={handleSubmit(handleSubmitForm)}>
         <label>Descrição do certificado</label><br />
-        <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} /> <br/><br/>
+        <input {... register('description')} type="text" name="description" /> <br/><br/>
 
         <label>Nome da Empresa</label><br />
-        <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} /> <br/><br/>
+        <input {... register('companyName')} type="text" name="companyName" /> <br/><br/>
 
         <label>CNPJ da Empresa</label><br />
-        <input type="text" value={cnpj} onChange={(e) => setCnpj(e.target.value)} /> <br/><br/>
+        <input {... register('cnpj')} type="text" name="cnpj" /> <br/><br/>
 
         <label>Certificado Url</label><br />
-        <input type="text" value={certificateUrl} onChange={(e) => setCertificateUrl(e.target.value)} /> <br/><br/>
+        <input {... register('certificateUrl')} type="text" name="certificateUrl" /> <br/><br/>
 
         <label>Carga horária informada</label><br />
-        <input type="text" value={informedTime} onChange={(e) => setInformedTime(Number(e.target.value))} /> <br/><br/>
+        <input {... register('informedTime')} type="number" name="informedTime" /> <br/><br/>
 
         <button type="submit">Create activitie!</button>
       </form>
 
       <br/><br/>
       <h2>Lista de atividades:</h2>
-
-      {console.log('atividadesComplementares: ', atividadesComplementares)}
 
       <ul>
         {allAtividadesComplementares?.map((activity) => (

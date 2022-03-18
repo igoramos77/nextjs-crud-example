@@ -13,7 +13,7 @@ model ComplementaryActivity {
   companyName      String
   cnpj             String
   informedTime     Int
-  integralizedTime Int
+  integralizedTime Int @default(0)
   justification    String
   certificateUrl   String
   isActive         Boolean  @default(true)
