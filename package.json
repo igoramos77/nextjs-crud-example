@@ -11,14 +11,18 @@
   "dependencies": {
     "@prisma/client": "^3.11.0",
     "axios": "^0.26.1",
+    "joi": "^17.6.0",
+    "jsonwebtoken": "^8.5.1",
     "next": "12.1.0",
-    "next-auth": "^4.3.0",
+    "next-joi": "^2.2.1",
+    "nookies": "^2.5.2",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-hook-form": "^7.28.0"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
+    "@types/jsonwebtoken": "^8.5.8",
     "@types/node": "^17.0.21",
     "@types/react": "^17.0.40",
     "eslint": "8.11.0",

@@ -1,9 +1,9 @@
 import { GetServerSideProps } from 'next';
-import { signOut, useSession } from 'next-auth/react';
-
+import Router from "next/router";
 import { useForm } from 'react-hook-form';
+import { destroyCookie, parseCookies } from 'nookies';
 
-import api from '../../src/services/api';
+import api from '../../services/api';
 
 import Image from 'next/image';
 import { ComplementaryActivity, EStatus } from '@prisma/client';
@@ -13,15 +13,18 @@ import { prisma } from '../../lib/prisma';
 
 export default function App({ atividadesComplementares }) {
   const { register, handleSubmit } = useForm();
-  const { data, status } = useSession();
   
   const [allAtividadesComplementares, setAllAtividadesComplementares] = useState<ComplementaryActivity[]>(atividadesComplementares);
 
   const handleSubmitForm = useCallback(async (data) => {
     console.log(data);
 
+    if (data.description === "" || data.companyName === "" || data.cnpj === "" || data.informedTime === "" || data.certificateUrl === "") {
+      console.log('campos vazios');
+    }
+
     try {
-      const response = await api.post<ComplementaryActivity>(`/api/activities/create`, {
+      const response = await api.post(`/api/activities/create`, {
         description: data.description, 
         companyName: data.companyName,
         cnpj: data.cnpj,
@@ -42,17 +45,14 @@ export default function App({ atividadesComplementares }) {
     
   }, [allAtividadesComplementares]);
 
+  const signOut = () => {
+    alert('sair');
+    destroyCookie(null, '@token');
+    Router.push('/');
+  }
+
   return (
     <>
-      <p>{JSON.stringify(data)}</p>
-       {data?.user?.image && <Image
-        src={data?.user?.image}
-        alt='dsa' 
-        width={150}
-        height={150}
-      />}
-      <h2>Olá, {data?.user?.name}!</h2><br />
-
       <h2>Create a new actives</h2>
       <form onSubmit={handleSubmit(handleSubmitForm)}>
         <label>Descrição do certificado</label><br />
@@ -87,7 +87,18 @@ export default function App({ atividadesComplementares }) {
   )
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  console.log(ctx.req.cookies);
+  const { ['@token']: token } = parseCookies(ctx);
+
+  if (!token) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      }
+    }
+  }
 
   const complementaryActivity = await prisma.complementaryActivity.findMany({
     where: {
@@ -114,7 +125,6 @@ export const getServerSideProps: GetServerSideProps = async () => {
     }
   })
 
-  console.log('dataAtividadesComplementares::::: ', dataComplementaryActivity)
   return {
     props: {
       atividadesComplementares: dataComplementaryActivity,

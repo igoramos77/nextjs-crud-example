@@ -7,13 +7,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id            String   @id @default(uuid())
+  matricula     String   @unique
+  firstName     String
+  lastName      String
+  email         String   @unique
+  password      String   
+  lastLogin     DateTime?
+  photoUrl      String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 model ComplementaryActivity {
   id               String   @id @default(uuid())
   description      String
   companyName      String
   cnpj             String
   informedTime     Int
-  integralizedTime Int @default(0)
+  integralizedTime Int      @default(0)
   justification    String
   certificateUrl   String
   isActive         Boolean  @default(true)
