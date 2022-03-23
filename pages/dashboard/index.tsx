@@ -2,11 +2,17 @@ import { GetServerSideProps } from 'next';
 import Router from "next/router";
 import { useForm } from 'react-hook-form';
 import { destroyCookie, parseCookies } from 'nookies';
+import jwt_decode from "jwt-decode";
+
+interface IJWTDecodeProps {
+  matricula: string;
+  userId: string;
+}
 
 import api from '../../services/api';
 
 import Image from 'next/image';
-import { ComplementaryActivity, EStatus } from '@prisma/client';
+import { ComplementaryActivity, EStatus, User } from '@prisma/client';
 import { FormEvent, useCallback, useState } from 'react';
 
 import { prisma } from '../../lib/prisma';
@@ -23,7 +29,7 @@ export default function App({ atividadesComplementares }) {
       console.log('campos vazios');
     }
 
-    try {
+    try {      
       const response = await api.post(`/api/activities/create`, {
         description: data.description, 
         companyName: data.companyName,
@@ -46,8 +52,8 @@ export default function App({ atividadesComplementares }) {
   }, [allAtividadesComplementares]);
 
   const signOut = () => {
-    alert('sair');
     destroyCookie(null, '@token');
+    localStorage.removeItem('@user');
     Router.push('/');
   }
 
@@ -88,8 +94,9 @@ export default function App({ atividadesComplementares }) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  console.log(ctx.req.cookies);
+  //console.log(ctx.req.cookies);
   const { ['@token']: token } = parseCookies(ctx);
+  const { userId } = jwt_decode<IJWTDecodeProps>(token);
 
   if (!token) {
     return {
@@ -102,32 +109,21 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   const complementaryActivity = await prisma.complementaryActivity.findMany({
     where: {
+      userId: userId,
       NOT: {
         status: 'recused'
       }
     },
   });
 
-  const dataComplementaryActivity = complementaryActivity.map((activie) => {
-    return {
-      id: activie.id,
-      description: activie.description,
-      companyName: activie.companyName,
-      cnpj: activie.cnpj,
-      informedTime: activie.informedTime,
-      integralizedTime: activie.integralizedTime,
-      justification: activie.justification,
-      certificateUrl: activie.certificateUrl,
-      isActive: activie.isActive,
-      status: activie.status,
-      createdAt: activie.createdAt.toISOString(),
-      updatedAt: activie.updatedAt.toISOString(),
-    }
-  })
+  /* 
+  const complementaryActivity = await prisma.$queryRaw`select * from "public"."ComplementaryActivity"`;
+  console.log(complementaryActivity) 
+  */
 
   return {
     props: {
-      atividadesComplementares: dataComplementaryActivity,
+      atividadesComplementares: complementaryActivity,
     }
   }
 }

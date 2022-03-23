@@ -2,6 +2,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '../../../lib/prisma';
 
+interface IJWTDecodeProps {
+  matricula: string;
+  userId: string;
+}
+
 import jwt from 'jsonwebtoken';
 
 const jwtKey = process.env.JWT_SECRET;
@@ -23,7 +28,9 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
   });
   
   if (user) {
-    const token = jwt.sign({ matricula,  }, jwtKey, {
+    let userId = user.id;
+
+    const token = jwt.sign({ matricula, userId }, jwtKey, {
       algorithm: "HS256",
       expiresIn: jwtExpirySeconds,
     });

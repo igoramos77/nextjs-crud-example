@@ -4,6 +4,12 @@ import { prisma } from '../../../lib/prisma';
 
 import Joi from 'joi';
 import validate from '../../../lib/middlewares/validation';
+import { parseCookies } from 'nookies';
+import jwt_decode from "jwt-decode";
+interface IJWTDecodeProps {
+  matricula: string;
+  userId: string;
+}
 
 const schema = Joi.object({
   description: Joi.string().min(5).required(),
@@ -14,12 +20,15 @@ const schema = Joi.object({
 }); 
 
 export default validate({ body: schema }, async(req: NextApiRequest, res: NextApiResponse) => {
+  const {['@token']: token } = parseCookies({req});
+  const { userId } = jwt_decode<IJWTDecodeProps>(token);
+
   const { 
     description,
     companyName,
     cnpj,
     informedTime,
-    certificateUrl
+    certificateUrl,
   } = req.body; 
 
   const response = await prisma.complementaryActivity.create({
@@ -30,6 +39,7 @@ export default validate({ body: schema }, async(req: NextApiRequest, res: NextAp
       informedTime: informedTime,
       justification: '',
       certificateUrl: certificateUrl,
+      userId: userId,
     }
   });
 

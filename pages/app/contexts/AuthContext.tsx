@@ -17,7 +17,7 @@ interface IAuthenticatedProps {
   signOut(): void;
 }
 
-interface SigInData {
+export interface SigInData {
   matricula: string;
   password: string;
 }
@@ -32,6 +32,8 @@ export function AuthProvider({ children }) {
   const signIn = async ({ matricula, password }: SigInData) => {
     try {
       const { token, user } = await singInRequest({ matricula, password });
+
+      localStorage.setItem('@user', JSON.stringify(user));
    
       setCookie(undefined, '@token', token, {
        maxAge: 60 * 60 * 24 * 7, // 7 days
@@ -43,13 +45,14 @@ export function AuthProvider({ children }) {
    
       Router.push('/dashboard');
     } catch (error) {
-      alert(`Error: ${error}`,)
+      alert(`Matrícula ou senha inválidos!`,)
     }
   }
 
   const signOut = async () => {
-    alert('sair');
-    destroyCookie(null, '@token');
+    destroyCookie(null, '@token', {
+      path: '/',
+    })
     Router.push('/');
   }
 
